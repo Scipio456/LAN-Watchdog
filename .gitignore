@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+venv/
+ENV/
+
+# Project Specific
+scan_history.json
+known_devices.json
+router_rssi.json
+oui_vendors.json
+!oui_vendors_sample.json
+!known_devices_sample.json
+!router_rssi_sample.json
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

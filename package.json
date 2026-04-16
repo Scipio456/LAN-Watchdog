@@ -1,0 +1,27 @@
+{
+  "name": "wifi-device-scanner",
+  "version": "1.0.0",
+  "description": "Ethical local network device scanner (Python + Node.js)",
+  "main": "index.js",
+  "bin": {
+    "wifi-scanner": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "scan": "node index.js",
+    "monitor": "node index.js --monitor"
+  },
+  "keywords": [
+    "wifi",
+    "scanner",
+    "network",
+    "ethical"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1"
+  }
+}

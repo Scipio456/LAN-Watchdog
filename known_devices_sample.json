@@ -1,0 +1,14 @@
+{
+  "known_devices": [
+    {
+      "mac_address": "00-11-22-33-44-55",
+      "label": "Sample Router",
+      "notes": "Example trusted gateway label"
+    },
+    {
+      "mac_address": "66-77-88-99-aa-bb",
+      "label": "Sample Phone",
+      "notes": "Example trusted mobile device label"
+    }
+  ]
+}

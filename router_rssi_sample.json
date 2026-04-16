@@ -1,0 +1,19 @@
+{
+  "source_name": "Example Router Export",
+  "clients": [
+    {
+      "mac_address": "00-11-22-33-44-55",
+      "client_name": "Sample Router",
+      "rssi_dbm": -48,
+      "frequency_mhz": 2412,
+      "ap_name": "Example AP"
+    },
+    {
+      "mac_address": "66-77-88-99-aa-bb",
+      "client_name": "Sample Phone",
+      "rssi_dbm": -63,
+      "frequency_mhz": 5180,
+      "ap_name": "Example AP"
+    }
+  ]
+}
