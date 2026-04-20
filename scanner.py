@@ -911,6 +911,15 @@ def build_peer_relationships(context: NetworkContext, devices: list[dict]) -> li
     return relationships
 
 
+def resolve_hostnames(ips: Iterable[str], workers: int) -> dict[str, tuple[str | None, str]]:
+    results: dict[str, tuple[str | None, str]] = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {executor.submit(resolve_hostname, ip): ip for ip in ips}
+        for future in concurrent.futures.as_completed(futures):
+            results[futures[future]] = future.result()
+    return results
+
+
 def build_report(
     context: NetworkContext,
     wifi_info: WifiInfo,
@@ -937,15 +946,18 @@ def build_report(
     for ip in neighbor_entries:
         active_ips.add(ip)
 
-    ping_results = ping_active_hosts(sorted(active_ips, key=ipaddress.IPv4Address), workers=32, timeout_ms=350)
+    sorted_active_ips = sorted(active_ips, key=ipaddress.IPv4Address)
+    ping_results = ping_active_hosts(sorted_active_ips, workers=32, timeout_ms=350)
+    hostname_results = resolve_hostnames(sorted_active_ips, workers=16)
+
     devices = []
-    for ip in sorted(active_ips, key=ipaddress.IPv4Address):
+    for ip in sorted_active_ips:
         entry = arp_entries.get(ip) or neighbor_entries.get(ip) or {
             "mac_address": arp_probe_results[ip],
             "entry_type": "dynamic",
         }
         is_gateway = context.gateway == ip
-        hostname, hostname_note = resolve_hostname(ip)
+        hostname, hostname_note = hostname_results.get(ip, (None, "Hostname resolution failed."))
         ping_result = ping_results.get(ip, PingResult(reachable=False, latency_ms=None))
         router_rssi = router_rssi_observations.get(entry["mac_address"])
         vendor_name = lookup_vendor_name(entry["mac_address"], vendor_database)
@@ -1391,26 +1403,37 @@ def main() -> int:
 
     try:
         if args.monitor:
-            print(f"Monitoring every {args.interval_seconds} seconds. Waiting for network changes...")
+            print(f"Monitoring every {args.interval_seconds} seconds. Waiting for network changes...", flush=True)
             iteration = 0
             while True:
                 report = run_single_scan(args)
-                if args.json:
-                    if monitor_has_changes(report):
-                        print(json.dumps(report, indent=2))
-                else:
-                    if monitor_has_changes(report):
+                has_changes = monitor_has_changes(report)
+                
+                if iteration == 0 or has_changes:
+                    if iteration > 0 and not args.json:
+                        print() # Clear line from heartbeat dots
+                    if args.json:
+                        print(json.dumps(report, indent=2), flush=True)
+                    else:
                         print_monitor_summary(report)
+                        sys.stdout.flush()
+                elif not args.json:
+                    # Heartbeat dot to show progress
+                    print(".", end="", flush=True)
+
                 iteration += 1
                 if args.iterations is not None and iteration >= args.iterations:
                     break
                 time.sleep(args.interval_seconds)
+            if not args.json:
+                print()
         else:
             report = run_single_scan(args)
             if args.json:
-                print(json.dumps(report, indent=2))
+                print(json.dumps(report, indent=2), flush=True)
             else:
                 print_human_report(report)
+                sys.stdout.flush()
     except KeyboardInterrupt:
         print("Monitor stopped.", file=sys.stderr)
         return 130

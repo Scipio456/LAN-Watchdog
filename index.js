@@ -23,6 +23,9 @@ function runScanner(args) {
   // Combine CLI args with environment variables
   const finalArgs = [pythonScript, ...args];
   
+  // Force unbuffered output for real-time monitoring
+  process.env.PYTHONUNBUFFERED = '1';
+
   if (process.env.ROUTER_RSSI_SOURCE && !args.includes('--router-rssi-source')) {
     finalArgs.push('--router-rssi-source', process.env.ROUTER_RSSI_SOURCE);
   }
